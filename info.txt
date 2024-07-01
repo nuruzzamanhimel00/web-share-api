@@ -1,0 +1,5 @@
+web share with image
+https://benkaiser.dev/sharing-images-using-the-web-share-api/
+-> image share
+-> canvas share
+-> html share (have code)

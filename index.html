@@ -1,0 +1,99 @@
+<!-- html share  -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sharing HTML contents</title>
+    <style>
+        .exampleContents {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .divToShare {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px;
+            background-color: #f9f9f9;
+        }
+        .share-button {
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="exampleContents">
+        <h1>Sharing HTML contents</h1>
+        <div id="shareTarget" class="divToShare" style="opacity: 0;">
+            <h4>This is the div that will end up in the shared image</h4>
+            <table>
+                <thead><tr><th>Column 1</th><th>Column 2</th></tr></thead>
+                <tbody><tr><td>Data 1</td><td>Data 2</td></tr></tbody>
+            </table>
+            <ul>
+                <li>Item 1</li>
+                <li>Item 2</li>
+            </ul>
+            <img id="shareImage" src="nacho.jpg"  alt='Nacho Libre saying "take it easy"' width="200" />
+        </div>
+        <button class="share-button" onclick="onShare()">Share Image</button>
+        <a href="https://github.com/benkaiser/web-share-images/blob/master/src/examples/WebShareHTML.tsx" class="share-button">View Code</a>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        async function onShare() {
+            const shareTarget = document.getElementById('shareTarget');
+            const shareImage = document.getElementById('shareImage');
+
+            if (!shareTarget) {
+                console.error('Share target not found');
+                return;
+            }
+
+            // Ensure the image is fully loaded before capturing
+            if (shareImage.complete) {
+                alert('Image loaded');
+                captureAndShare();
+            } else {
+                alert('Not Image loaded');
+                shareImage.onload = captureAndShare;
+                shareImage.onerror = () => console.error('Failed to load the image');
+            }
+
+            async function captureAndShare() {
+                try {
+                    // Use html2canvas to capture the div content
+                    const canvas = await html2canvas(shareTarget);
+
+                    // Convert canvas to data URL
+                    const dataUrl = canvas.toDataURL();
+
+                    // Convert data URL to Blob
+                    const response = await fetch(dataUrl);
+                    const blob = await response.blob();
+
+                    // Create a File object from the Blob
+                    const file = new File([blob], 'htmldiv.png', { type: blob.type, lastModified: new Date().getTime() });
+
+                    // Prepare share data
+                    const shareData = {
+                        files: [file]
+                    };
+
+                    // Share using Web Share API
+                    await navigator.share(shareData);
+                    console.log('Shared successfully');
+                } catch (error) {
+                    console.error('Error sharing:', error);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
